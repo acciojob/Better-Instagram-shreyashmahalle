@@ -1,40 +1,29 @@
-const parent = document.getElementById('parent');
-let dragSrc = null;
+const draggables = document.querySelectorAll(".draggable");
 
-// Attach DnD handlers to all tiles
-parent.querySelectorAll('.image').forEach((item) => {
-  // already draggable in HTML, but harmless to ensure:
-  item.setAttribute('draggable', 'true');
+let draggedDiv = null;
 
-  item.addEventListener('dragstart', (e) => {
-    dragSrc = item;
-    item.classList.add('selected');        // uses your .selected CSS
-    e.dataTransfer.effectAllowed = 'move';
-    // needed for Firefox
-    e.dataTransfer.setData('text/plain', '');
+draggables.forEach(div => {
+  div.addEventListener("dragstart", e => {
+    draggedDiv = div;
+    e.dataTransfer.setData("text/plain", div.id);
   });
 
-  item.addEventListener('dragend', () => {
-    item.classList.remove('selected');
-    dragSrc = null;
+  div.addEventListener("dragover", e => {
+    e.preventDefault(); // Allow dropping
   });
 
-  item.addEventListener('dragover', (e) => {
-    e.preventDefault(); // allow drop
-  });
-
-  item.addEventListener('drop', (e) => {
+  div.addEventListener("drop", e => {
     e.preventDefault();
-    const target = item;
-    if (dragSrc && dragSrc !== target) {
-      swapSiblings(dragSrc, target);
+
+    const targetDiv = e.currentTarget;
+
+    if (draggedDiv && draggedDiv !== targetDiv) {
+      // Swap background images
+      const tempBg = draggedDiv.style.backgroundImage;
+      draggedDiv.style.backgroundImage = targetDiv.style.backgroundImage;
+      targetDiv.style.backgroundImage = tempBg;
     }
+
+    draggedDiv = null;
   });
 });
-
-// Swap two sibling nodes in their parent (#parent)
-function swapSiblings(a, b) {
-  const aNext = a.nextSibling === b ? a : a.nextSibling;
-  b.parentNode.insertBefore(a, b);
-  a.parentNode.insertBefore(b, aNext);
-}
